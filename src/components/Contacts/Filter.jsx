@@ -1,8 +1,8 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { filterContact } from '../../redux/contactsSlice';
-
-import css from './Contact.module.css';
 import { getFiltering } from '../../redux/selectors';
+
+import { FormControl, FormLabel, Input } from '@chakra-ui/react';
 
 export const Filter = () => {
   const dispatch = useDispatch();
@@ -14,16 +14,26 @@ export const Filter = () => {
   };
 
   return (
-    <div className={css.contactForm}>
-      <label className={css.contactNameLabel}>Find contact by name</label>
-      <input
-        className={css.inputField}
+    <FormControl
+      maxW="100%"
+      p={5}
+      bgColor="cyan.800"
+      color="white"
+      borderRadius={5}
+      boxShadow="6px 6px 12px rgb(114, 116, 116)"
+    >
+      <FormLabel fontFamily="Roboto" fontSize={20}>
+        Find contact by name
+      </FormLabel>
+      <Input
         type="text"
         placeholder="search..."
         name="filter"
         value={filterData}
         onChange={handleFindChange}
+        color="black"
+        bgColor="white"
       />
-    </div>
+    </FormControl>
   );
 };

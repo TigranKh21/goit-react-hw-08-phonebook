@@ -1,12 +1,12 @@
 .contactForm {
-  max-width: 250px;
+  /* max-width: 250px; */
   border-radius: 5px;
   box-shadow: 6px 6px 12px rgb(114, 116, 116);
   padding: 20px;
   margin-left: 10px;
+  margin-right: 10px;
   margin-top: 10px;
   display: flex;
-  flex-direction: column;
 }
 
 .contactWrapper {
@@ -33,7 +33,7 @@ label {
   margin-left: 5px;
 }
 .contactsList {
-  box-shadow: 6px 6px 12px rgb(114, 116, 116);
+  box-shadow: 6px 6px 12px rgb(4, 36, 163);
   max-width: 500px;
   border-radius: 5px;
   padding-top: 10px;

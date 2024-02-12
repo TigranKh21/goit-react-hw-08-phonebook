@@ -1,12 +1,12 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { createContact, deleteContact, requestContacts } from 'services/api';
+import { createAsyncThunk, createSlice, isAnyOf } from '@reduxjs/toolkit';
 import { STATUSES } from 'units/constants';
+import { authInstance } from './auth/authSlice';
 
 export const apiGetContacts = createAsyncThunk(
   'contacts/apiGetContacts',
   async (_, thunkApi) => {
     try {
-      const data = await requestContacts();
+      const { data } = await authInstance.get('/contacts');
       return data;
     } catch (error) {
       error.message(error);
@@ -19,7 +19,7 @@ export const apiAddContact = createAsyncThunk(
   'contacts/apiAddContact',
   async (formData, thunkApi) => {
     try {
-      const { data } = await createContact(formData);
+      const { data } = await authInstance.post('/contacts', formData);
       return data;
     } catch (error) {
       error.message(error);
@@ -32,7 +32,7 @@ export const apiDeleteContact = createAsyncThunk(
   'contacts/apiDeleteContact',
   async (id, thunkApi) => {
     try {
-      const { data } = await deleteContact(id);
+      const { data } = await authInstance.delete(`/contacts/${id}`);
       return data;
     } catch (error) {
       error.message(error);
@@ -52,14 +52,6 @@ const contactSlice = createSlice({
   name: 'contacts',
   initialState,
   reducers: {
-    addContact(state, action) {
-      state.contacts = [...state.contacts, action.payload];
-    },
-    removeContact(state, action) {
-      state.contacts = state.contacts.filter(
-        contact => contact.id !== action.payload
-      );
-    },
     filterContact(state, action) {
       state.filterData = action.payload;
     },
@@ -67,46 +59,46 @@ const contactSlice = createSlice({
   extraReducers: builder =>
     builder
       //get contacts
-      .addCase(apiGetContacts.pending, (state, action) => {
-        state.status = STATUSES.pending;
-        state.error = null;
-      })
       .addCase(apiGetContacts.fulfilled, (state, action) => {
         state.status = STATUSES.success;
         state.contacts = action.payload;
       })
-      .addCase(apiGetContacts.rejected, (state, action) => {
-        state.status = STATUSES.error;
-        state.error = action.payload;
-        // add contact
-      })
-      .addCase(apiAddContact.pending, (state, action) => {
-        state.status = STATUSES.pending;
-        state.error = null;
-      })
+      // add contact
       .addCase(apiAddContact.fulfilled, (state, action) => {
         state.status = STATUSES.success;
         state.contacts = [...state.contacts, action.payload];
       })
-      .addCase(apiAddContact.rejected, (state, action) => {
-        state.status = STATUSES.error;
-        state.error = action.payload;
-      })
       // delete contact
-      .addCase(apiDeleteContact.pending, (state, action) => {
-        state.status = STATUSES.pending;
-        state.error = null;
-      })
       .addCase(apiDeleteContact.fulfilled, (state, action) => {
         state.status = STATUSES.success;
         state.contacts = state.contacts.filter(
-          contact => Number(contact.id) !== Number(action.payload.id)
+          contact => contact.id !== action.payload.id
         );
       })
-      .addCase(apiDeleteContact.rejected, (state, action) => {
-        state.status = STATUSES.error;
-        state.error = action.payload;
-      }),
+      // handle pending for each thunk pending
+      .addMatcher(
+        isAnyOf(
+          apiGetContacts.pending,
+          apiAddContact.pending,
+          apiDeleteContact.pending
+        ),
+        state => {
+          state.status = STATUSES.pending;
+          state.error = null;
+        }
+      )
+      // handle reject for each thunk rejected
+      .addMatcher(
+        isAnyOf(
+          apiGetContacts.rejected,
+          apiAddContact.rejected,
+          apiDeleteContact.rejected
+        ),
+        (state, action) => {
+          state.status = STATUSES.error;
+          state.error = action.payload;
+        }
+      ),
 });
 
 export const { filterContact } = contactSlice.actions;
